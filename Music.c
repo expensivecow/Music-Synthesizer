@@ -38,7 +38,7 @@ void audio_isr(void* context, alt_u32 id)
 		{
 			audio_buffer[audio_buffer_count] = 0;
 
-			if(key == 34 && audio_data_16_hit_current_index < hit_file_size/2)
+			if(key == 's' && audio_data_16_hit_current_index < hit_file_size/2)
 			{
 				audio_buffer[audio_buffer_count] += (audio_data_16_hit[audio_data_16_hit_current_index])/2;
 
@@ -54,7 +54,7 @@ void audio_isr(void* context, alt_u32 id)
 				}
 
 			}
-			if(key == 22 && audio_data_16_laser_current_index < laser_file_size/2)
+			if(key == 'd' && audio_data_16_laser_current_index < laser_file_size/2)
 			{
 				audio_buffer[audio_buffer_count] += (audio_data_16_laser[audio_data_16_laser_current_index]/2);
 
