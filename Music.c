@@ -7,29 +7,63 @@
 #include "altera_up_sd_card_avalon_interface.h"
 #include <sys/alt_irq.h>
 
+//Defines for piano keys
+#define C5 65 // Lower C
+#define Cs 87 // C#
+#define D5 83 // D
+#define Ds 69 // D#
+#define E5 68 // E
+#define F5 70 // F
+#define Fs 84 // F#
+#define G5 71 // G
+#define Gs 89 // G#
+#define A5 72 // A
+#define As 85 // A#
+#define B5 74 // B
+#define C6 75 // Higher C
+
 //General
 alt_up_audio_dev *audio;
 short int opened_file = 0;
-int sample_size = 110; //ISR: 96 Hit: 2
+int sample_size = 110;
+int file_size = 0; //Universal file size for sounds
 
-//Hit
-unsigned int *audio_data_16_hit;
-int hit_file_size = 0;
-int audio_data_16_hit_current_index = 0;
+//C
+unsigned int *c_data;
+int c_index = 0;
 
-//Laser
-unsigned int *audio_data_16_laser;
-int laser_file_size = 0;
-int audio_data_16_laser_current_index = 0;
+//D
+unsigned int *d_data;
+int d_index = 0;
 
-//ISR
+//E
+unsigned int *e_data;
+int e_index = 0;
+
+//F
+unsigned int *f_data;
+int f_index = 0;
+
+//G
+unsigned int *g_data;
+int g_index = 0;
+
+//A
+unsigned int *a_data;
+int a_index = 0;
+
+//B
+unsigned int *b_data;
+int b_index = 0;
+
 char *filename;
 unsigned int *audio_buffer;
 
-char key;
+int key = 0;
 
-void audio_isr(void* context, alt_u32 id)
-{
+void read_sd(void);
+
+void audio_isr(void* context, alt_u32 id) {
 	int audio_buffer_count;
 
 	if(key != 0) //Condition for hit sound
@@ -38,43 +72,128 @@ void audio_isr(void* context, alt_u32 id)
 		{
 			audio_buffer[audio_buffer_count] = 0;
 
-			if(key == 's' && audio_data_16_hit_current_index < hit_file_size/2)
+			if(key == C5 && c_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (audio_data_16_hit[audio_data_16_hit_current_index])/2;
+					audio_buffer[audio_buffer_count] += (c_data[c_index]);
 
-				audio_data_16_hit_current_index++;
+				c_index++;
 
-				if(audio_data_16_hit_current_index >= hit_file_size/2)
+				if(c_index >= file_size/2)
 				{
-					audio_data_16_hit_current_index = 0;
+					c_index = 0;
 				}
 				else
 				{
-					audio_data_16_hit_current_index++;
+					c_index++;
 				}
-
 			}
-			if(key == 'd' && audio_data_16_laser_current_index < laser_file_size/2)
+
+			else if(key == D5 && d_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (audio_data_16_laser[audio_data_16_laser_current_index]/2);
+				audio_buffer[audio_buffer_count] += (d_data[d_index]);
 
-				audio_data_16_laser_current_index++;
+				d_index++;
 
-				if(audio_data_16_laser_current_index >= laser_file_size/2)
+				if(d_index >= file_size/2)
 				{
-					audio_data_16_laser_current_index = 0;
+					d_index = 0;
 				}
 				else
 				{
-					audio_data_16_laser_current_index++;
+					d_index++;
+				}
+			}
+
+			else if(key == E5 && e_index < file_size/2)
+			{
+				audio_buffer[audio_buffer_count] += (e_data[e_index]);
+
+				e_index++;
+
+				if(e_index >= file_size/2)
+				{
+					e_index = 0;
+				}
+				else
+				{
+					e_index++;
+				}
+			}
+
+			else if(key == F5 && f_index < file_size/2)
+			{
+				audio_buffer[audio_buffer_count] += (f_data[f_index]);
+
+				f_index++;
+
+				if(f_index >= file_size/2)
+				{
+					f_index = 0;
+				}
+				else
+				{
+					f_index++;
+				}
+			}
+
+			else if(key == G5 && g_index < file_size/2)
+			{
+				audio_buffer[audio_buffer_count] += (g_data[g_index]);
+
+				g_index++;
+
+				if(g_index >= file_size/2)
+				{
+					g_index = 0;
+				}
+				else
+				{
+					g_index++;
+				}
+			}
+
+			else if(key == A5 && a_index < file_size/2)
+			{
+				audio_buffer[audio_buffer_count] += (a_data[a_index]);
+
+				a_index++;
+
+				if(a_index >= file_size/2)
+				{
+					a_index = 0;
+				}
+				else
+				{
+					a_index++;
+				}
+			}
+
+			else if(key == B5 && b_index < file_size/2)
+			{
+				audio_buffer[audio_buffer_count] += (b_data[b_index]);
+
+				b_index++;
+
+				if(b_index >= file_size/2)
+				{
+					b_index = 0;
+				}
+				else
+				{
+					b_index++;
 				}
 			}
 		}
 	}
 	else
 	{
-		audio_data_16_hit_current_index = 0;
-		audio_data_16_laser_current_index = 0;
+		c_index = 0;
+		d_index = 0;
+		e_index = 0;
+		f_index = 0;
+		g_index = 0;
+		a_index = 0;
+		b_index = 0;
 		for(audio_buffer_count = 0 ; audio_buffer_count < sample_size; audio_buffer_count++)
 		{
 			audio_buffer[audio_buffer_count]=0;
@@ -85,28 +204,26 @@ void audio_isr(void* context, alt_u32 id)
 	alt_up_audio_write_fifo(audio, audio_buffer, sample_size, ALT_UP_AUDIO_RIGHT);
 }
 
-short convert_to_16 (char a, char b)
-{
+short convert_to_16 (char a, char b) {
 	short c = (unsigned char) a << 8 | (unsigned char) b;
 
 	return c;
 }
 
-void open_file(filename)
-{
+void open_file(filename) {
+
 	opened_file = alt_up_sd_card_fopen(filename, 0);
 
 	if (opened_file == -1)
-		printf("File could not be opened\n");
+		printf("%s could not be opened\n", filename);
 
-	if (opened_file == -2)
+	else if (opened_file == -2)
 		printf("File is already opened\n");
-
-	printf("File is opened.\n");
+	else
+		printf("File is opened.\n");
 }
 
-void reverse_array(int array[], int count)
-{
+void reverse_array(int array[], int count) {
 	int temp, i;
 
 	for (i = 0; i < count/2; ++i)
@@ -117,8 +234,7 @@ void reverse_array(int array[], int count)
 	}
 }
 
-void audio_file_info()
-{
+void audio_file_info() {
 	unsigned int audio_file_header[40];
 	unsigned int audio_file_size[4];
 
@@ -141,66 +257,151 @@ void audio_file_info()
 
 	reverse_array(audio_file_size, 4);
 
-	if(filename == "Jump5.wav")
-	{
-		hit_file_size = (audio_file_size[0] << 8*3 | audio_file_size[1] << 8*2 | audio_file_size[2] << 8 | audio_file_size[3]) + 8;
-		printf("Jump5 size: %d\n", hit_file_size);
-	}
-	else{
-		laser_file_size = (audio_file_size[0] << 8*3 | audio_file_size[1] << 8*2 | audio_file_size[2] << 8 | audio_file_size[3]) + 8;
-		printf("Laser size: %d\n", laser_file_size);
-	}
-
+	file_size = (audio_file_size[0] << 8*3 | audio_file_size[1] << 8*2 | audio_file_size[2] << 8 | audio_file_size[3]) + 8;
+	printf("file size: %d\n", file_size);
 }
 
-void audio_data_load()
-{
+void audio_data_load() {
 	int i,j;
 	unsigned int audio_data_byte[2];
 
-	if(filename == "Jump5.wav")
+	if(filename == "C5.wav")
 	{
 		//Allocates memory space for buffer
-		audio_data_16_hit = (unsigned int *) malloc ((hit_file_size/2) * sizeof(unsigned int));
+		c_data = (unsigned int *) malloc ((file_size/2) * sizeof(unsigned int));
 
-		printf("Loading Jump5 data\n");
+		printf("Loading c data\n");
 
-		for(i = 0; i < (hit_file_size/2); i++)
+		for(i = 0; i < (file_size/2); i++)
 		{
 			for(j = 0; j < 2; j++)
 			{
 				audio_data_byte[j] = alt_up_sd_card_read(opened_file) & (0x00FF);
 			}
 
-			audio_data_16_hit[i] = convert_to_16(audio_data_byte[1], audio_data_byte[0]);
+			c_data[i] = convert_to_16(audio_data_byte[1], audio_data_byte[0]);
 		}
 
-		printf("Finish loading Jump5 data\n");
+		printf("Finish loading c data\n");
 	}
 
-	else
+	else if(filename == "D5.wav")
 	{
-		audio_data_16_laser = (unsigned int *) malloc ((laser_file_size/2) * sizeof(unsigned int));
+		d_data = (unsigned int *) malloc ((file_size/2) * sizeof(unsigned int));
 
-		printf("Loading Laser data\n");
+		printf("Loading d data\n");
 
-		for(i = 0; i < (laser_file_size/2); i++)
+		for(i = 0; i < (file_size/2); i++)
 		{
 			for(j = 0; j < 2; j++)
 			{
 				audio_data_byte[j] = alt_up_sd_card_read(opened_file) & (0x00FF);
 			}
 
-			audio_data_16_laser[i] = convert_to_16(audio_data_byte[1], audio_data_byte[0]);
+			d_data[i] = convert_to_16(audio_data_byte[1], audio_data_byte[0]);
 		}
 
-		printf("Finish loading Laser data\n");
+		printf("Finish loading d data\n");
+	}
+
+	else if(filename == "e.wav")
+	{
+		e_data = (unsigned int *) malloc ((file_size/2) * sizeof(unsigned int));
+
+		printf("Loading e data\n");
+
+		for(i = 0; i < (file_size/2); i++)
+		{
+			for(j = 0; j < 2; j++)
+			{
+				audio_data_byte[j] = alt_up_sd_card_read(opened_file) & (0x00FF);
+			}
+
+			e_data[i] = convert_to_16(audio_data_byte[1], audio_data_byte[0]);
+		}
+
+		printf("Finish loading e data\n");
+	}
+
+	else if(filename == "f.wav")
+	{
+		f_data = (unsigned int *) malloc ((file_size/2) * sizeof(unsigned int));
+
+		printf("Loading f data\n");
+
+		for(i = 0; i < (file_size/2); i++)
+		{
+			for(j = 0; j < 2; j++)
+			{
+				audio_data_byte[j] = alt_up_sd_card_read(opened_file) & (0x00FF);
+			}
+
+			f_data[i] = convert_to_16(audio_data_byte[1], audio_data_byte[0]);
+		}
+
+		printf("Finish loading f data\n");
+	}
+
+	else if(filename == "g.wav")
+	{
+		g_data = (unsigned int *) malloc ((file_size/2) * sizeof(unsigned int));
+
+		printf("Loading g data\n");
+
+		for(i = 0; i < (file_size/2); i++)
+		{
+			for(j = 0; j < 2; j++)
+			{
+				audio_data_byte[j] = alt_up_sd_card_read(opened_file) & (0x00FF);
+			}
+
+			g_data[i] = convert_to_16(audio_data_byte[1], audio_data_byte[0]);
+		}
+
+		printf("Finish loading g data\n");
+	}
+
+	else if(filename == "a.wav")
+	{
+		a_data = (unsigned int *) malloc ((file_size/2) * sizeof(unsigned int));
+
+		printf("Loading a data\n");
+
+		for(i = 0; i < (file_size/2); i++)
+		{
+			for(j = 0; j < 2; j++)
+			{
+				audio_data_byte[j] = alt_up_sd_card_read(opened_file) & (0x00FF);
+			}
+
+			a_data[i] = convert_to_16(audio_data_byte[1], audio_data_byte[0]);
+		}
+
+		printf("Finish loading a data\n");
+	}
+
+	else if(filename == "b.wav")
+	{
+		b_data = (unsigned int *) malloc ((file_size/2) * sizeof(unsigned int));
+
+		printf("Loading b data\n");
+
+		for(i = 0; i < (file_size/2); i++)
+		{
+			for(j = 0; j < 2; j++)
+			{
+				audio_data_byte[j] = alt_up_sd_card_read(opened_file) & (0x00FF);
+			}
+
+			b_data[i] = convert_to_16(audio_data_byte[1], audio_data_byte[0]);
+		}
+
+		printf("Finish loading b data\n");
 	}
 
 }
 
-void audio_initialize()
-{
+void audio_initialize() {
 	audio = alt_up_audio_open_dev(AUDIO_0_NAME);
 
 	alt_up_audio_reset_audio_core(audio);
@@ -208,8 +409,7 @@ void audio_initialize()
 	audio_buffer = (unsigned int *) malloc (sample_size * sizeof(unsigned int));
 }
 
-void start_audio_interrupt()
-{
+void start_audio_interrupt() {
 	if(alt_irq_register(AUDIO_0_IRQ, NULL ,audio_isr) == 0)
 		printf("irq_register success\n");
 	else
@@ -219,28 +419,75 @@ void start_audio_interrupt()
 	alt_up_audio_enable_write_interrupt(audio);
 }
 
-void stop_audio_interrupt()
-{
+void stop_audio_interrupt() {
 	alt_up_audio_disable_write_interrupt(audio);
 }
 
-void load_music(char *selectedFile)
-{
+void load_music(char *selectedFile) {
 	filename = selectedFile;
 	open_file(filename);
-	audio_file_info();
+	if(filename == "C5.wav")
+		audio_file_info();
 	audio_data_load();
 }
 
 
-void load_audio(void)
-{
-	load_music("Jump5.wav");
-	load_music("Laser.wav");
+void load_audio(void) {
+	read_sd();
+	load_music("C5.wav");
+	load_music("D5.wav");
+	load_music("e.wav");
+	load_music("f.wav");
+	load_music("g.wav");
+	load_music("a.wav");
+	load_music("b.wav");
 	audio_initialize();
 	start_audio_interrupt();
 }
 
-void play_sound(char ascii){
+void play_sound(int ascii){
 	key = ascii;
+	//printf("sound found: %i\n", ascii);
+}
+
+void read_sd (void)
+{
+	int connected = 0;
+	int exist = 0;
+	short int file_found = 0;
+	char *file_name;
+	alt_up_sd_card_dev *device_reference = NULL;
+	device_reference = alt_up_sd_card_open_dev(ALTERA_UP_SD_CARD_AVALON_INTERFACE_0_NAME);
+	if (device_reference != NULL)
+	{
+		if ((connected == 0) && (alt_up_sd_card_is_Present()))
+		{
+			printf("Card connected.\n");
+			if (alt_up_sd_card_is_FAT16())
+				printf("FAT16 file system detected.\n");
+			else
+				printf("Unknown file system.\n");
+			connected = 1;
+			file_found = alt_up_sd_card_find_first ("//", file_name);
+			while (file_found == 0)
+			{
+				file_found = alt_up_sd_card_find_next(file_name);
+				if (file_found == 0)
+				{
+					exist = 1;
+					printf ("%s\n", file_name);
+				}
+				else if (file_found == 1)
+					printf ("Invalid directory.\n");
+				else if (file_found == -1 && exist == 0)
+					printf ("Card empty.\n");
+			}
+		}
+		else if ((connected == 1) && (alt_up_sd_card_is_Present() == false))
+		{
+			printf("Card disconnected.\n");
+			connected = 0;
+		}
+	}
+	//printf ("Error, please check card.\n");
 }
