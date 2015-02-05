@@ -58,12 +58,12 @@ int main() {
 	alt_up_pixel_buffer_dma_swap_buffers(pixel_buffer);
 	while (alt_up_pixel_buffer_dma_check_swap_buffers_status(pixel_buffer));
 
-	alt_up_pixel_buffer_dma_change_back_buffer_address(pixel_buffer, pixel_buffer_addr2);
-
 	alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 0);
 	alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 1);
 
 	initializePiano(pixel_buffer);
+
+	int pixel_buffer_flag = 0;
 
 	int check = decode_scancode(ps2,  &code_type,  &buf,  &ascii);
 	while(1) {
@@ -71,6 +71,21 @@ int main() {
 		if(check >= 0) {
 			printf("%d\n", ascii);
 			while(ascii > 0) {
+				if(pixel_buffer_flag == 0){
+					alt_up_pixel_buffer_dma_change_back_buffer_address(pixel_buffer, pixel_buffer_addr2);
+					pixel_buffer_flag = 1;
+				}
+				else {
+					alt_up_pixel_buffer_dma_change_back_buffer_address(pixel_buffer, pixel_buffer_addr2);
+					pixel_buffer_flag = 0;
+				}
+
+				alt_up_pixel_buffer_dma_swap_buffers(pixel_buffer);
+				while (alt_up_pixel_buffer_dma_check_swap_buffers_status(pixel_buffer));
+
+				alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 0);
+				alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 1);
+
 				check = decode_scancode(ps2, &code_type, &buf, &ascii);
 				if(ascii != currentNote && ascii != 0) {
 					//printf("found\n");
