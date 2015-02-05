@@ -80,7 +80,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 				if(c_index >= file_size/2)
 				{
-					c_index = 0;
+					c_index = file_size/4;
 				}
 				else
 				{
@@ -96,7 +96,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 				if(d_index >= file_size/2)
 				{
-					d_index = 0;
+					d_index = file_size/4;
 				}
 				else
 				{
@@ -112,7 +112,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 				if(e_index >= file_size/2)
 				{
-					e_index = 0;
+					e_index = file_size/4;
 				}
 				else
 				{
@@ -128,7 +128,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 				if(f_index >= file_size/2)
 				{
-					f_index = 0;
+					f_index = file_size/4;
 				}
 				else
 				{
@@ -144,7 +144,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 				if(g_index >= file_size/2)
 				{
-					g_index = 0;
+					g_index = file_size/4;
 				}
 				else
 				{
@@ -160,7 +160,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 				if(a_index >= file_size/2)
 				{
-					a_index = 0;
+					a_index = file_size/4;
 				}
 				else
 				{
@@ -176,7 +176,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 				if(b_index >= file_size/2)
 				{
-					b_index = 0;
+					b_index = file_size/4;
 				}
 				else
 				{
