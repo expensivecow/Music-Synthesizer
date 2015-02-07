@@ -6,14 +6,11 @@
 short int write_file = 0;
 
 //  \r is carriage return, \r\n is new line in windows \0 is the null value for end of string
-char writeData[40] = "Hello, writing works! :) \r\n\0";
+char buffer[40] = "HELLO!\r\n\0";
 
-void write_sd(char *desiredfile, char *buffer[])
+void write_sd(char *desiredfile)
 {
 	int connected = 0;
-	int exist = 0;
-	short int file_found = 0;
-	char *file_name;
 	alt_up_sd_card_dev *device_reference = NULL;
 	device_reference = alt_up_sd_card_open_dev(ALTERA_UP_SD_CARD_AVALON_INTERFACE_0_NAME);
 
@@ -27,7 +24,7 @@ void write_sd(char *desiredfile, char *buffer[])
 			else
 				printf("Unknown file system.\n");
 			connected = 1;
-			write_file = alt_up_sd_card_fopen("file.txt", true);
+			write_file = alt_up_sd_card_fopen(desiredfile, true);
 			 if (write_file < 0){
 				  printf("Problem creating file. Error %i", write_file);
 			 }
@@ -44,8 +41,9 @@ void write_sd(char *desiredfile, char *buffer[])
 				  }
 				  printf("Writing successful\n");
 
-				  printf("Closing File");
+				  printf("Closing File\n");
 				  alt_up_sd_card_fclose(write_file);
+				  printf("%i\n",write_file);
 				  printf("Done\n");
 			  }
 		}
@@ -56,10 +54,8 @@ void write_sd(char *desiredfile, char *buffer[])
 		}
 	}
 }
-/*
 
 int main (void){
-	write_sd("TEST.TXT",writeData);
+	write_sd("TEST.TXT");
 	return 0;
 }
-*/
