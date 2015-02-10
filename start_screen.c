@@ -60,9 +60,8 @@ int main()
 		alt_up_char_buffer_string(char_buffer, "Synthesizer", 35, 17);
 
 		alt_up_char_buffer_string(char_buffer, "Start", 38, 30);
-		alt_up_char_buffer_string(char_buffer, "Tutorial", 36, 33);
-		alt_up_char_buffer_string(char_buffer, "User Manual", 35 ,36);
-		alt_up_char_buffer_string(char_buffer, "Settings", 36, 39);
+		alt_up_char_buffer_string(char_buffer, "User Manual", 35 ,33);
+		alt_up_char_buffer_string(char_buffer, "Settings", 36, 36);
 
 		IOWR_32DIRECT(drawer_base,0,135); // Set x1
 		IOWR_32DIRECT(drawer_base,4,85); // Set y1
