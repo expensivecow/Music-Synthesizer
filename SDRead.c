@@ -5,16 +5,18 @@
 
 int num_of_txt = 0;
 char **list_of_txt;
+alt_up_sd_card_dev *device_reference = NULL;
+short int songFile;
 
+//Scans files in SD card
+//Gets TXT files and puts into list_of_txt
 void getTxtFiles (void)
 {
 	int connected = 0;
-	int exist = 0;
 	short int file_found = 0;
 	char *file_name;
 	int count = 0;
 
-	alt_up_sd_card_dev *device_reference = NULL;
 	device_reference = alt_up_sd_card_open_dev(ALTERA_UP_SD_CARD_AVALON_INTERFACE_0_NAME);
 	if (device_reference != NULL)
 	{
@@ -46,10 +48,6 @@ void getTxtFiles (void)
 				else if (file_found == 1)
 				{
 					printf ("Invalid directory.\n");
-				}
-				else if (file_found == -1 && exist == 0)
-				{
-					printf ("Card empty.\n");
 				}
 			}
 			//Allocates memory for txt files
@@ -87,4 +85,18 @@ void displayTxtFiles (void)
 	{
 		printf("%s\n",list_of_txt[i]);
 	}
+}
+
+//Might need a return
+//Should convert contents into sound
+int** readTxtFile (char* filename)
+{
+	int** contents;
+	songFile = alt_up_sd_card_fopen(filename, 0);
+	do{
+		unsigned int letter = alt_up_sd_card_read(songFile);
+		printf("%d\n",letter);
+	}while(letter != -1);
+	
+	return contents;
 }
