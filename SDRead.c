@@ -40,10 +40,10 @@ void getTxtFiles (void)
 		file_found = alt_up_sd_card_find_next(file_name);
 		if (file_found == 0)
 		{
-			printf ("%s\n", file_name);
-			int length = strlen(file_name);
-			char* extension = file_name[length - 4];
-			if(strcmp(extension, ".txt"))
+			printf ("File name: %s\n", file_name);
+			char* extension = strstr(file_name, ".TXT");
+			printf("Extension: %s\n", extension);
+			if(strcmp(extension, ".TXT") == 0)
 			{
 				num_of_txt++;
 			}
@@ -63,9 +63,8 @@ void getTxtFiles (void)
 		file_found = alt_up_sd_card_find_next(file_name);
 		if (file_found == 0)
 		{
-			int length = strlen(file_name);
-			char* extension = file_name[length - 4];
-			if(strcmp(extension, ".txt"))
+			char* extension = strstr(file_name, ".TXT");
+			if(strcmp(extension, ".TXT") == 0)
 			{
 				list_of_txt[count] = file_name;
 				count++;
@@ -94,6 +93,7 @@ int** readTxtFile (char* filename)
 	do{
 		letter = alt_up_sd_card_read(songFile);
 		printf("%d\n",letter);
+		//Do something with letter
 	}while(letter != -1);
 	
 	return contents;
