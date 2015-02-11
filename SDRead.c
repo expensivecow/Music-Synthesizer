@@ -40,9 +40,7 @@ void getTxtFiles (void)
 		file_found = alt_up_sd_card_find_next(file_name);
 		if (file_found == 0)
 		{
-			printf ("File name: %s\n", file_name);
 			char* extension = strstr(file_name, ".TXT");
-			printf("Extension: %s\n", extension);
 			if(strcmp(extension, ".TXT") == 0)
 			{
 				num_of_txt++;
@@ -55,6 +53,11 @@ void getTxtFiles (void)
 	}
 	//Allocates memory for txt files
 	list_of_txt = malloc(num_of_txt * sizeof(char*));
+	int i;
+	for(i = 0; i < num_of_txt; i++)
+	{
+		list_of_txt[i] = malloc(12 * sizeof(char));
+	}
 
 	//Places names of txt files into array
 	file_found = alt_up_sd_card_find_first ("//", file_name);
@@ -66,7 +69,8 @@ void getTxtFiles (void)
 			char* extension = strstr(file_name, ".TXT");
 			if(strcmp(extension, ".TXT") == 0)
 			{
-				list_of_txt[count] = file_name;
+				printf("%s\n",file_name);
+				strcpy(list_of_txt[count],file_name);
 				count++;
 			}
 		}
@@ -92,16 +96,16 @@ int** readTxtFile (char* filename)
 	songFile = alt_up_sd_card_fopen(filename, 0);
 	do{
 		letter = alt_up_sd_card_read(songFile);
-		printf("%d\n",letter);
+		printf("%c\n",letter);
 		//Do something with letter
 	}while(letter != -1);
 	
 	return contents;
 }
 
-void main(void)
+/*void main(void)
 {
 	openSD();
 	getTxtFiles();
 	displayTxtFiles();
-}
+}*/
