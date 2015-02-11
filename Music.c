@@ -1,4 +1,6 @@
 #define switches (volatile char *) 0x00002010
+#define key3Switch (volatile char *) 0x00002050
+#define key2Switch (volatile char *) 0x00002060
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +8,7 @@
 #include "altera_up_avalon_audio.h"
 #include "altera_up_sd_card_avalon_interface.h"
 #include <sys/alt_irq.h>
+#include "altera_up_avalon_character_lcd.h"
 
 //Defines for piano keys
 #define C5 65 // Lower C
@@ -27,6 +30,8 @@ alt_up_audio_dev *audio;
 short int opened_file = 0;
 int sample_size = 110;
 int file_size = 0; //Universal file size for sounds
+//Volume
+int volume = 5;
 
 //C
 unsigned int *c_data;
@@ -63,8 +68,48 @@ int key = 0;
 
 void read_sd(void);
 
+
+void volumeLCD(void)
+{
+	alt_up_character_lcd_dev * char_lcd_dev;
+	// open the Character LCD port
+	char_lcd_dev = alt_up_character_lcd_open_dev ("/dev/character_lcd_0");
+	if ( char_lcd_dev == NULL)
+		alt_printf ("Error: could not open character LCD device\n");
+	else
+		alt_printf ("Opened character LCD device\n");
+	/* Initialize the character display */
+	alt_up_character_lcd_init (char_lcd_dev);
+	alt_up_character_lcd_string(char_lcd_dev, "Volume:");
+	char ascii = (char) (volume + (int)'0');
+	char second_row[] = {ascii, '\0'};
+	alt_up_character_lcd_set_cursor_pos(char_lcd_dev, 0, 1);
+	alt_up_character_lcd_string(char_lcd_dev, second_row);
+}
+
+void changeVolume(int change){
+
+	if(change == 0){
+		printf("Volume Before : %i \n",volume);
+		if(volume>1 && volume<=9){
+			volume--;
+			printf("Volume : %i \n",volume);
+		}
+	}
+
+	else if(change == 1){
+		printf("Volume : %i \n",volume);
+		if(volume>=1 && volume<9){
+			volume++;
+			printf("Volume : %i \n",volume);
+		}
+	}
+	volumeLCD();
+}
+
 void audio_isr(void* context, alt_u32 id) {
 	int audio_buffer_count;
+	int finalVolume = (1/9)*volume;
 
 	if(key != 0) //Condition for hit sound
 	{
@@ -74,7 +119,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 			if(key == C5 && c_index < file_size/2)
 			{
-					audio_buffer[audio_buffer_count] += (c_data[c_index]);
+					audio_buffer[audio_buffer_count] += (c_data[c_index])*finalVolume;
 
 				c_index++;
 
@@ -90,7 +135,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 			else if(key == D5 && d_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (d_data[d_index]);
+				audio_buffer[audio_buffer_count] += (d_data[d_index])*finalVolume;
 
 				d_index++;
 
@@ -106,7 +151,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 			else if(key == E5 && e_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (e_data[e_index]);
+				audio_buffer[audio_buffer_count] += (e_data[e_index])*finalVolume;
 
 				e_index++;
 
@@ -122,7 +167,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 			else if(key == F5 && f_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (f_data[f_index]);
+				audio_buffer[audio_buffer_count] += (f_data[f_index])*finalVolume;
 
 				f_index++;
 
@@ -138,7 +183,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 			else if(key == G5 && g_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (g_data[g_index]);
+				audio_buffer[audio_buffer_count] += (g_data[g_index])*finalVolume;
 
 				g_index++;
 
@@ -154,7 +199,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 			else if(key == A5 && a_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (a_data[a_index]);
+				audio_buffer[audio_buffer_count] += (a_data[a_index])*finalVolume;
 
 				a_index++;
 
@@ -170,7 +215,7 @@ void audio_isr(void* context, alt_u32 id) {
 
 			else if(key == B5 && b_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (b_data[b_index]);
+				audio_buffer[audio_buffer_count] += (b_data[b_index])*finalVolume;
 
 				b_index++;
 
@@ -407,6 +452,8 @@ void audio_initialize() {
 	alt_up_audio_reset_audio_core(audio);
 
 	audio_buffer = (unsigned int *) malloc (sample_size * sizeof(unsigned int));
+
+	volumeLCD();
 }
 
 void start_audio_interrupt() {
