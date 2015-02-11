@@ -64,7 +64,8 @@ int b_index = 0;
 char *filename;
 unsigned int *audio_buffer;
 
-int key = 0;
+int* keys;
+int keySize;
 
 void read_sd(void);
 
@@ -116,117 +117,11 @@ void audio_isr(void* context, alt_u32 id) {
 		for(audio_buffer_count = 0 ; audio_buffer_count < sample_size; audio_buffer_count++)
 		{
 			audio_buffer[audio_buffer_count] = 0;
-
-			if(key == C5 && c_index < file_size/2)
+			
+			int i;
+			for(i = 0; i < keySize; i++)
 			{
-					audio_buffer[audio_buffer_count] += (c_data[c_index])*finalVolume;
-
-				c_index++;
-
-				if(c_index >= file_size/2)
-				{
-					c_index = file_size/4;
-				}
-				else
-				{
-					c_index++;
-				}
-			}
-
-			else if(key == D5 && d_index < file_size/2)
-			{
-				audio_buffer[audio_buffer_count] += (d_data[d_index])*finalVolume;
-
-				d_index++;
-
-				if(d_index >= file_size/2)
-				{
-					d_index = file_size/4;
-				}
-				else
-				{
-					d_index++;
-				}
-			}
-
-			else if(key == E5 && e_index < file_size/2)
-			{
-				audio_buffer[audio_buffer_count] += (e_data[e_index])*finalVolume;
-
-				e_index++;
-
-				if(e_index >= file_size/2)
-				{
-					e_index = file_size/4;
-				}
-				else
-				{
-					e_index++;
-				}
-			}
-
-			else if(key == F5 && f_index < file_size/2)
-			{
-				audio_buffer[audio_buffer_count] += (f_data[f_index])*finalVolume;
-
-				f_index++;
-
-				if(f_index >= file_size/2)
-				{
-					f_index = file_size/4;
-				}
-				else
-				{
-					f_index++;
-				}
-			}
-
-			else if(key == G5 && g_index < file_size/2)
-			{
-				audio_buffer[audio_buffer_count] += (g_data[g_index])*finalVolume;
-
-				g_index++;
-
-				if(g_index >= file_size/2)
-				{
-					g_index = file_size/4;
-				}
-				else
-				{
-					g_index++;
-				}
-			}
-
-			else if(key == A5 && a_index < file_size/2)
-			{
-				audio_buffer[audio_buffer_count] += (a_data[a_index])*finalVolume;
-
-				a_index++;
-
-				if(a_index >= file_size/2)
-				{
-					a_index = file_size/4;
-				}
-				else
-				{
-					a_index++;
-				}
-			}
-
-			else if(key == B5 && b_index < file_size/2)
-			{
-				audio_buffer[audio_buffer_count] += (b_data[b_index])*finalVolume;
-
-				b_index++;
-
-				if(b_index >= file_size/2)
-				{
-					b_index = file_size/4;
-				}
-				else
-				{
-					b_index++;
-				}
+				addSound(keys[i], finalVolume);
 			}
 		}
 	}
@@ -247,6 +142,120 @@ void audio_isr(void* context, alt_u32 id) {
 
 	alt_up_audio_write_fifo(audio, audio_buffer, sample_size, ALT_UP_AUDIO_LEFT);
 	alt_up_audio_write_fifo(audio, audio_buffer, sample_size, ALT_UP_AUDIO_RIGHT);
+}
+
+void addSound(int key , int finalVolume) {
+	if(key == C5 && c_index < file_size/2)
+	{
+		audio_buffer[audio_buffer_count] += (c_data[c_index])*finalVolume;
+
+		c_index++;
+
+		if(c_index >= file_size/2)
+		{
+			c_index = file_size/4;
+		}
+		else
+		{
+			c_index++;
+		}
+	}
+
+	else if(key == D5 && d_index < file_size/2)
+	{
+		audio_buffer[audio_buffer_count] += (d_data[d_index])*finalVolume;
+
+		d_index++;
+
+		if(d_index >= file_size/2)
+		{
+			d_index = file_size/4;
+		}
+		else
+		{
+			d_index++;
+		}
+	}
+
+	else if(key == E5 && e_index < file_size/2)
+	{
+		audio_buffer[audio_buffer_count] += (e_data[e_index])*finalVolume;
+
+		e_index++;
+
+		if(e_index >= file_size/2)
+		{
+			e_index = file_size/4;
+		}
+		else
+		{
+			e_index++;
+		}
+	}
+
+	else if(key == F5 && f_index < file_size/2)
+	{
+		audio_buffer[audio_buffer_count] += (f_data[f_index])*finalVolume;
+
+		f_index++;
+
+		if(f_index >= file_size/2)
+		{
+			f_index = file_size/4;
+		}
+		else
+		{
+			f_index++;
+		}
+	}
+
+	else if(key == G5 && g_index < file_size/2)
+	{
+		audio_buffer[audio_buffer_count] += (g_data[g_index])*finalVolume;
+
+		g_index++;
+
+		if(g_index >= file_size/2)
+		{
+			g_index = file_size/4;
+		}
+		else
+		{
+			g_index++;
+		}
+	}
+
+	else if(key == A5 && a_index < file_size/2)
+	{
+		audio_buffer[audio_buffer_count] += (a_data[a_index])*finalVolume;
+
+		a_index++;
+
+		if(a_index >= file_size/2)
+		{
+			a_index = file_size/4;
+		}
+		else
+		{
+			a_index++;
+		}
+	}
+
+	else if(key == B5 && b_index < file_size/2)
+	{
+		audio_buffer[audio_buffer_count] += (b_data[b_index])*finalVolume;
+
+		b_index++;
+
+		if(b_index >= file_size/2)
+		{
+			b_index = file_size/4;
+		}
+		else
+		{
+			b_index++;
+		}
+	}
 }
 
 short convert_to_16 (char a, char b) {
@@ -492,8 +501,9 @@ void load_audio(void) {
 	start_audio_interrupt();
 }
 
-void play_sound(int ascii){
+void play_sound(int[] ascii, int size){
 	key = ascii;
+	keySize = size;
 	//printf("sound found: %i\n", ascii);
 }
 
