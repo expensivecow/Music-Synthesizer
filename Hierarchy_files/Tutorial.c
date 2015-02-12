@@ -58,7 +58,7 @@ void start_tutorial(alt_up_pixel_buffer_dma_dev* pixel_buffer, alt_up_char_buffe
 					if(code_type == 1 && buf == 28) {
 						printf("code type: %d | buf: %d\n", code_type, buf);
 						reDrawKey(pixel_buffer, buf, BLUE);
-						addToPlayArray(buf);
+						addToPlayArray(ascii);
 						play_sound(returnPlayList(13),13);
 					}
 					else if(code_type == 4 && buf == C1){
@@ -84,7 +84,7 @@ void start_tutorial(alt_up_pixel_buffer_dma_dev* pixel_buffer, alt_up_char_buffe
 					if(code_type == 1 && buf == D1) {
 						printf("code type: %d | buf: %d\n", code_type, buf);
 						reDrawKey(pixel_buffer, buf, BLUE);
-						addToPlayArray(buf);
+						addToPlayArray(ascii);
 						play_sound(returnPlayList(13),13);
 					}
 					else if(code_type == 4 && buf == D1){
@@ -140,7 +140,7 @@ void start_tutorial(alt_up_pixel_buffer_dma_dev* pixel_buffer, alt_up_char_buffe
 					if(code_type == 1 && buf == Cs) {
 						printf("code type: %d | buf: %d\n", code_type, buf);
 						reDrawKey(pixel_buffer, buf, BLUE);
-						addToPlayArray(buf);
+						addToPlayArray(ascii);
 						play_sound(returnPlayList(13),13);
 					}
 					else if(code_type == 4 && buf == Cs){
@@ -169,7 +169,7 @@ void start_tutorial(alt_up_pixel_buffer_dma_dev* pixel_buffer, alt_up_char_buffe
 					if(code_type == 1 && buf == Ds) {
 						printf("code type: %d | buf: %d\n", code_type, buf);
 						reDrawKey(pixel_buffer, buf, BLUE);
-						addToPlayArray(buf);
+						addToPlayArray(ascii);
 						play_sound(returnPlayList(13),13);
 					}
 					else if(code_type == 4 && buf == Ds){
@@ -224,8 +224,7 @@ void start_tutorial(alt_up_pixel_buffer_dma_dev* pixel_buffer, alt_up_char_buffe
 				while(1) {
 					decode_scancode(ps2, &code_type, &buf, &ascii);
 					if(code_type == 4 && buf == 90) {
-						printf("code type: %d | buf: %d\n", code_type, buf);
-						start_keyboard(ps2, code_type, buf, ascii);
+						alt_up_char_buffer_clear(char_buffer);
 						return;
 					}
 				}

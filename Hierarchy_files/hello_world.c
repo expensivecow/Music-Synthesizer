@@ -77,11 +77,13 @@ int main() {
 		int select = start_screen(pixel_buffer, char_buffer, ps2, code_type, buf, ascii);
 
 		if(select == 1) {
-			start_keyboard(ps2, code_type, buf, ascii, pixel_buffer);
+			start_keyboard(ps2, code_type, buf, ascii, pixel_buffer, char_buffer);
 		} else if(select == 2) {
 			start_tutorial(pixel_buffer, char_buffer, ps2, code_type, buf, ascii);
 		}
 
+		alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 0); //current
+		alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 1); //back buffer
 		alt_up_pixel_buffer_dma_swap_buffers(pixel_buffer);
 		while(alt_up_pixel_buffer_dma_check_swap_buffers_status(pixel_buffer));
 	}

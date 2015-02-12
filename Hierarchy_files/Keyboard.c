@@ -58,11 +58,14 @@ int prevKey = 0;
 
 void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 		unsigned char buf, char ascii,
-		alt_up_pixel_buffer_dma_dev* pixel_buffer) {
+		alt_up_pixel_buffer_dma_dev* pixel_buffer, alt_up_char_buffer_dev *char_buffer) {
 	initializePiano(pixel_buffer);
 
 	int check = decode_scancode(ps2, &code_type, &buf, &ascii);
 	frequency = alt_timestamp_freq();
+	alt_up_char_buffer_string(char_buffer, "Press Esc to Return to Menu!", 50, 1);
+	alt_up_char_buffer_string(char_buffer, "Press F1 to Record, F2 to Playback!", 55, 2);
+	nameWhiteKeys(char_buffer);
 
 	//Keyboard loop
 	while (1) {
@@ -113,6 +116,9 @@ void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 		if (recordStatus==0 && code_type == 2 && buf == 5){
 			recordStatus = 1;
 			printf("Start Recording\n");
+			alt_up_char_buffer_string(char_buffer, "Recording", 0, 1);
+			alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 0, 0, 35, 10, RED,
+							0);
 			alt_timestamp_start();
 
 		}
@@ -120,6 +126,13 @@ void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 			recordFinish(recordIndex);
 			recordStatus = 0;
 			recordIndex = 0;
+
+			alt_up_char_buffer_clear(char_buffer);
+			alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 0, 0, 50, 10, BLACK,
+							0);
+			alt_up_char_buffer_string(char_buffer, "Press Esc to Return to Menu!", 50, 1);
+			alt_up_char_buffer_string(char_buffer, "Press F2 to Record, F3 to Playback!", 55, 2);
+			nameWhiteKeys(char_buffer);
 			printf("End Recording\n");
 		}
 		if (isValidKey(buf)) {
@@ -157,6 +170,8 @@ void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 				recordIndex++;
 			}
 			play_sound(playList,13);
+		} else if (buf == 118) {
+			return;
 		}
 	}
 }
