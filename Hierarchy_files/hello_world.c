@@ -43,20 +43,30 @@ int main() {
 	/***************************************/
 	alt_up_pixel_buffer_dma_dev* pixel_buffer;
 	alt_up_char_buffer_dev *char_buffer;
+
+	pixel_buffer = alt_up_pixel_buffer_dma_open_dev("/dev/pixel_buffer_dma");
 	char_buffer = alt_up_char_buffer_open_dev("/dev/char_drawer");
 	alt_up_char_buffer_init(char_buffer);
 
-	pixel_buffer = alt_up_pixel_buffer_dma_open_dev("/dev/pixel_buffer_dma");
 	if (pixel_buffer == 0) {
 		printf(
 				"error initializing pixel buffer (check name in alt_up_pixel_buffer_dma_open_dev)\n");
 	}
-	alt_up_pixel_buffer_dma_change_back_buffer_address(pixel_buffer,
-			PIXEL_BUFFER_BASE);
+
+	unsigned int pixel_buffer_addr1 = PIXEL_BUFFER_BASE;
+	unsigned int pixel_buffer_addr2 = PIXEL_BUFFER_BASE + (512 * 240 * 2);
+
+	alt_up_char_buffer_clear(char_buffer);
+
+	alt_up_pixel_buffer_dma_change_back_buffer_address(pixel_buffer, PIXEL_BUFFER_BASE);
 	alt_up_pixel_buffer_dma_swap_buffers(pixel_buffer);
-	while (alt_up_pixel_buffer_dma_check_swap_buffers_status(pixel_buffer))
-		;
-	alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 0);
+	while (alt_up_pixel_buffer_dma_check_swap_buffers_status(pixel_buffer));
+
+	alt_up_pixel_buffer_dma_change_back_buffer_address(pixel_buffer, pixel_buffer_addr2);
+
+	//clear pixel buffers:
+	alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 0); //current
+	alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 1); //back buffer
 
 	while (1) {
 		//start_keyboard(ps2, code_type, buf, ascii, pixel_buffer);
@@ -64,9 +74,11 @@ int main() {
 		int select = start_screen(pixel_buffer, char_buffer, ps2, code_type, buf, ascii);
 
 		if(select == 1) {
-
 			start_keyboard(ps2, code_type, buf, ascii, pixel_buffer);
 		}
+
+		alt_up_pixel_buffer_dma_swap_buffers(pixel_buffer);
+		while(alt_up_pixel_buffer_dma_check_swap_buffers_status(pixel_buffer));
 	}
 	return 0;
 }
