@@ -39,18 +39,26 @@ void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 
 	//Keyboard loop
 	while (1) {
+
+		int colour = 0;
+		int mask_iterations = 4;
+		int iteration_number = 0;
+
+		while (iteration_number < mask_iterations) {
+			//with reference to http://stackoverflow.com/questions/7622887/generating-a-random-32-bit-hexadecimal-value-in-c
+			colour |= (rand() & 0xff) << iteration_number * 8;
+			iteration_number++;
+		}
+
 		check = decode_scancode(ps2, &code_type, &buf, &ascii);
 		if (isValidKey(buf)) {
 			if (code_type == 1) {
-				printf("code type: %d | buf: %d\n", code_type, buf);
-				reDrawKey(pixel_buffer, buf, BLUE);
+				reDrawKey(pixel_buffer, buf, colour);
 				addToPlayArray(buf);
 			} else if (code_type == 4 && isSharp(buf)) {
-				printf("code type: %d | buf: %d\n", code_type, buf);
 				reDrawKey(pixel_buffer, buf, BLACK);
 				removeFromPlayArray(buf);
 			} else if (code_type == 4 && !isSharp(buf)) {
-				printf("code type: %d | buf: %d\n", code_type, buf);
 				reDrawKey(pixel_buffer, buf, WHITE);
 				removeFromPlayArray(buf);
 			}
