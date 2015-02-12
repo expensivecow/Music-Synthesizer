@@ -66,6 +66,9 @@ void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 		}
 	}
 }
+int returnPlayList(int size){
+	return playList;
+}
 
 void removeFromPlayArray(int buf) {
 	int i = 0;
