@@ -7,6 +7,7 @@ short int write_file = 0;
 
 //  \r is carriage return, \r\n is new line in windows \0 is the null value for end of string
 int buffer[100][13];
+int timer[100];
 char key;
 
 void write_sd(char *desiredfile)
@@ -51,6 +52,7 @@ void write_sd(char *desiredfile)
 					  {
 						  alt_up_sd_card_write(write_file, buffer[index][i]);
 					  }
+					  alt_up_sd_card_write(write_file, timer[index]);
 					  int NL = '\n';
 					  alt_up_sd_card_write(write_file, NL);
 					  //Increment the file
@@ -107,12 +109,15 @@ int checkDuplicate(char *check_file){
 	}
 }*/
 
-void recordNote(int keys[], int bufferIndex){
+void recordNote(int keys[], int bufferIndex,double duration){
 	int i;
 	for(i = 0; i < 13; i ++)
 	{
 		buffer[bufferIndex][i] = keys[i];
 	}
+	timer[bufferIndex] = (int)duration;
+	 printf("Timer[index] : %i ",timer[bufferIndex]);
+	printf("%f\n", duration);
 }
 
 void recordFinish(int bufferIndex){

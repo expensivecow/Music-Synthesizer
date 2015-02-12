@@ -7,7 +7,6 @@ int num_of_txt = 0;
 char **list_of_txt;
 alt_up_sd_card_dev *device_reference = NULL;
 short int songFile;
-int contents[100][13];
 
 void openSD(void)
 {
@@ -90,7 +89,7 @@ void displayTxtFiles (void)
 
 //Might need a return
 //Should convert contents into sound
-void readTxtFile (char* filename, size_t m, size_t n, int playback[m][n])
+void readTxtFile (char* filename, size_t m, size_t n, int playback[m][n],int timer[m])
 {
 	unsigned int letter;
 	int count = 0;
@@ -111,8 +110,11 @@ void readTxtFile (char* filename, size_t m, size_t n, int playback[m][n])
 				break;
 			}
 		}
+		letter = alt_up_sd_card_read(songFile);
+		timer[count] = letter;
 		if(letter == -1)
 		{
+			timer[count + 1] = -1;
 			break;
 		}
 		//Skips /n char

@@ -6,6 +6,7 @@
 #include "altera_up_avalon_video_character_buffer_with_dma.h"
 #include "altera_up_avalon_ps2.h"
 #include "altera_up_ps2_keyboard.h"
+#include "sys/alt_timestamp.h"
 
 #define drawer_base (volatile int *) 0x2100
 #define WHITE 0xFFFF
@@ -48,6 +49,12 @@ int playList[13] = { 0 };
 int recordStatus = 0;
 int recordIndex = 0;
 int keyChanged = 0;
+int frequency = 0;
+int cycles = 0;
+double totaltime = 0;
+double previoustime = 0;
+
+int prevKey = 0;
 
 void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 		unsigned char buf, char ascii,
@@ -55,6 +62,7 @@ void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 	initializePiano(pixel_buffer);
 
 	int check = decode_scancode(ps2, &code_type, &buf, &ascii);
+	frequency = alt_timestamp_freq();
 
 	//Keyboard loop
 	while (1) {
@@ -75,12 +83,38 @@ void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 			printf("Start playing\n");
 			openSD();
 			int playback[100][13];
-			readTxtFile("STUPID.TXT",100,13,playback);
+			int timebuffer[100];
+			readTxtFile("STUPID.TXT",100,13,playback,timebuffer);
+			int complete = 0;
+			int count = 0;
+
+			int i;
+			for(i = 0; i < 100; i++) {
+				if(timebuffer[i] == -1) {
+					break;
+				}
+				printf("Here\n");
+				cycles = alt_timestamp();
+				totaltime = 0;
+				printf("Time to be played : %d\n", timebuffer[i]);
+				while(totaltime <= timebuffer[i]+0.5) {
+					cycles = alt_timestamp();
+					if(cycles >= 50000000) {
+						totaltime += (double) cycles / 50000000;
+						alt_timestamp_start();
+					}
+					play_sound(playback[i], 13);
+				}
+				play_sound(playList, 0);
+			}
+
 		}
 
 		if (recordStatus==0 && code_type == 2 && buf == 5){
 			recordStatus = 1;
 			printf("Start Recording\n");
+			alt_timestamp_start();
+
 		}
 		else if (recordStatus==1 && code_type == 2 && buf == 6){
 			recordFinish(recordIndex);
@@ -89,25 +123,38 @@ void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 			printf("End Recording\n");
 		}
 		if (isValidKey(buf)) {
-			if (code_type == 1) {
+			if (code_type == 1 && prevKey != buf) {
 				reDrawKey(pixel_buffer, buf, colour);
-				printf("Before add %c, %d\n", ascii, ascii);
 				addToPlayArray(ascii);
 				keyChanged = 1;
+				prevKey = buf;
 			} else if (code_type == 4 && isSharp(buf)) {
 				reDrawKey(pixel_buffer, buf, BLACK);
 				removeFromPlayArray(buf);
 				keyChanged = 1;
+				prevKey = 0;
 			} else if (code_type == 4 && !isSharp(buf)) {
 				reDrawKey(pixel_buffer, buf, WHITE);
 				removeFromPlayArray(buf);
 				keyChanged = 1;
+				prevKey = 0;
 			}
 			if(recordStatus == 1 && keyChanged == 1){
-				printf("Record new note. \n");
-				recordNote(playList,recordIndex);
-				recordIndex++;
 				keyChanged = 0;
+				printf("Record new note. \n");
+				//printf("%i", frequency);
+
+				cycles = alt_timestamp();
+				if(cycles >= 50000000) {
+					totaltime += (double) cycles / 50000000;
+					alt_timestamp_start();
+				}
+				printf("%f\n", totaltime-previoustime);
+				recordNote(playList,recordIndex,(double)(totaltime-previoustime));
+				previoustime = totaltime;
+				//float duration = (float) alt_timestamp()/ (float) frequency;
+
+				recordIndex++;
 			}
 			play_sound(playList,13);
 		}
