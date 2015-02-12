@@ -7,6 +7,9 @@
 #include "altera_up_avalon_ps2.h"
 #include "altera_up_ps2_keyboard.h"
 
+#define key3Switch (volatile char *) 0x00002050
+#define key2Switch (volatile char *) 0x00002060
+
 #define drawer_base (volatile int *) 0x2100
 #define WHITE 0xFFFF
 #define BLACK 0x0000
@@ -42,6 +45,8 @@ int main() {
 	alt_up_ps2_dev * ps2 = alt_up_ps2_open_dev("/dev/keyboard");
 	alt_up_ps2_init(ps2);
 	load_audio();
+	int key3_reader;
+	int key2_reader;
 
 	KB_CODE_TYPE code_type;
 	unsigned char buf;
@@ -68,6 +73,10 @@ int main() {
 	//Keyboard loop
 	while (1) {
 		check = decode_scancode(ps2, &code_type, &buf, &ascii);
+
+		key3_reader = *key3Switch;
+		key2_reader = *key2Switch;
+
 		if (isValidKey(buf)) {
 			if(code_type == 1) {
 				printf("code type: %d | buf: %d\n", code_type, buf);
@@ -82,6 +91,27 @@ int main() {
 				reDrawKey(buf, WHITE);
 				removeFromPlayArray(buf);
 			}
+			play_sound(playList,13);
+		}
+		if(key3_reader == 0){
+			while(key3_reader == 0){
+				printf("Waiting \n");
+				key3_reader = *key3Switch;
+			}
+			printf("Key3 Switches : %i \n", key3_reader);
+			changeVolume(0);
+		}
+		else if(key2_reader == 0){
+			while(key2_reader == 0){
+				printf("Waiting \n");
+				key2_reader = *key2Switch;
+			}
+			printf("Key2 Switches : %i \n",key2_reader);
+			changeVolume(1);
+		}
+		else{
+			//printf("Key3 Switches : %i \n",key3_reader);
+			//printf("Key2 Switches : %i \n",key2_reader);
 		}
 	}
 	return 0;
@@ -111,13 +141,42 @@ void addToPlayArray(int buf) {
 		}
 		i = 0;
 		//look for empty spot in array
-		while(i < maxNotes) {
+		/*while(i < maxNotes) {
 			if(playList[i] == 0) {
 				playList[i] = buf;
 				printf("adding %d to play list\n", buf);
 				return;
 			}
 			i++;
+		}*/
+		if(buf==C1){
+			playList[0] = buf;
+			return;
+		}
+		else if(buf==D1){
+			playList[1] = buf;
+			return;
+		}
+
+		else if(buf==E1){
+			playList[2] = buf;
+			return;
+		}
+		else if(buf==F1){
+			playList[3] = buf;
+			return;
+		}
+		else if(buf==G1){
+			playList[4] = buf;
+			return;
+		}
+		else if(buf==A1){
+			playList[5] = buf;
+			return;
+		}
+		else if(buf==B1){
+			playList[6] = buf;
+			return;
 		}
 	}
 }
