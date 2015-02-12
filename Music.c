@@ -9,21 +9,22 @@
 #include "altera_up_sd_card_avalon_interface.h"
 #include <sys/alt_irq.h>
 #include "altera_up_avalon_character_lcd.h"
+#include <math.h>
 
 //Defines for piano keys
-#define C5 65 // Lower C
-#define Cs 87 // C#
-#define D5 83 // D
-#define Ds 69 // D#
-#define E5 68 // E
-#define F5 70 // F
-#define Fs 84 // F#
-#define G5 71 // G
-#define Gs 89 // G#
-#define A5 72 // A
-#define As 85 // A#
-#define B5 74 // B
-#define C6 75 // Higher C
+#define C1 28 // Lower C
+#define Cs 29 // C#
+#define D1 27 // D
+#define Ds 36 // D#
+#define E1 35 // E
+#define F1 43 // F
+#define Fs 44 // F#
+#define G1 52 // G
+#define Gs 53 // G#
+#define A1 51 // A
+#define As 60 // A#
+#define B1 59 // B
+#define C2 66 // Higher C
 
 //General
 alt_up_audio_dev *audio;
@@ -64,9 +65,14 @@ int b_index = 0;
 char *filename;
 unsigned int *audio_buffer;
 
-int key = 0;
+int* keys;
+int keySize = 0;
+
+
+int tempPrint = 0;
 
 void read_sd(void);
+void addSound(int);
 
 
 void volumeLCD(void)
@@ -104,44 +110,61 @@ void changeVolume(int change){
 			printf("Volume : %i \n",volume);
 		}
 	}
+
+	printf("temp Print : %i \n",tempPrint);
+
 	volumeLCD();
+}
+
+bool checkZero(void)
+{
+	int i;
+	for(i = 0; i < keySize; i++)
+	{
+		if(keys[i] != 0)
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 void audio_isr(void* context, alt_u32 id) {
 	int audio_buffer_count;
-	int finalVolume = (1/9)*volume;
-
-	if(key != 0) //Condition for hit sound
+	//double finalVolume = pow(2,(volume-7));
+	//unsigned int finalVolume = 4;
+	if(!checkZero())
 	{
 		for(audio_buffer_count = 0 ; audio_buffer_count < sample_size; audio_buffer_count++)
 		{
 			audio_buffer[audio_buffer_count] = 0;
 
-			if(key == C5 && c_index < file_size/2)
+			//addSound(audio_buffer_count);
+
+			if(keys[0] == C1 && c_index < file_size/2)
 			{
-					audio_buffer[audio_buffer_count] += (c_data[c_index])*finalVolume;
+				audio_buffer[audio_buffer_count] += (c_data[c_index]);
 
 				c_index++;
 
 				if(c_index >= file_size/2)
 				{
-					c_index = file_size/4;
+					c_index = 0;
 				}
 				else
 				{
 					c_index++;
 				}
 			}
-
-			else if(key == D5 && d_index < file_size/2)
+			if(keys[1] == D1 && d_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (d_data[d_index])*finalVolume;
+				audio_buffer[audio_buffer_count] += (d_data[d_index]);
 
 				d_index++;
 
 				if(d_index >= file_size/2)
 				{
-					d_index = file_size/4;
+					d_index = 0;
 				}
 				else
 				{
@@ -149,15 +172,15 @@ void audio_isr(void* context, alt_u32 id) {
 				}
 			}
 
-			else if(key == E5 && e_index < file_size/2)
+			if(keys[2] == E1 && e_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (e_data[e_index])*finalVolume;
+				audio_buffer[audio_buffer_count] += (e_data[e_index]);
 
 				e_index++;
 
 				if(e_index >= file_size/2)
 				{
-					e_index = file_size/4;
+					e_index = 0;
 				}
 				else
 				{
@@ -165,15 +188,15 @@ void audio_isr(void* context, alt_u32 id) {
 				}
 			}
 
-			else if(key == F5 && f_index < file_size/2)
+			if(keys[3] == F1 && f_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (f_data[f_index])*finalVolume;
+				audio_buffer[audio_buffer_count] += (f_data[f_index]);
 
 				f_index++;
 
 				if(f_index >= file_size/2)
 				{
-					f_index = file_size/4;
+					f_index = 0;
 				}
 				else
 				{
@@ -181,15 +204,15 @@ void audio_isr(void* context, alt_u32 id) {
 				}
 			}
 
-			else if(key == G5 && g_index < file_size/2)
+			if(keys[4] == G1 && g_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (g_data[g_index])*finalVolume;
+				audio_buffer[audio_buffer_count] += (g_data[g_index]);
 
 				g_index++;
 
 				if(g_index >= file_size/2)
 				{
-					g_index = file_size/4;
+					g_index = 0;
 				}
 				else
 				{
@@ -197,15 +220,15 @@ void audio_isr(void* context, alt_u32 id) {
 				}
 			}
 
-			else if(key == A5 && a_index < file_size/2)
+			if(keys[5] == A1 && a_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (a_data[a_index])*finalVolume;
+				audio_buffer[audio_buffer_count] += (a_data[a_index]);
 
 				a_index++;
 
 				if(a_index >= file_size/2)
 				{
-					a_index = file_size/4;
+					a_index = 0;
 				}
 				else
 				{
@@ -213,15 +236,15 @@ void audio_isr(void* context, alt_u32 id) {
 				}
 			}
 
-			else if(key == B5 && b_index < file_size/2)
+			if(keys[6] == B1 && b_index < file_size/2)
 			{
-				audio_buffer[audio_buffer_count] += (b_data[b_index])*finalVolume;
+				audio_buffer[audio_buffer_count] += (b_data[b_index]);
 
 				b_index++;
 
 				if(b_index >= file_size/2)
 				{
-					b_index = file_size/4;
+					b_index = 0;
 				}
 				else
 				{
@@ -230,6 +253,7 @@ void audio_isr(void* context, alt_u32 id) {
 			}
 		}
 	}
+
 	else
 	{
 		c_index = 0;
@@ -249,6 +273,124 @@ void audio_isr(void* context, alt_u32 id) {
 	alt_up_audio_write_fifo(audio, audio_buffer, sample_size, ALT_UP_AUDIO_RIGHT);
 }
 
+void addSound(int audio_buffer_count) {
+	int i;
+	for(i = 0; i < keySize; i++)
+	{
+		if(keys[i] == C1 && c_index < file_size/2)
+		{
+			audio_buffer[audio_buffer_count] += (c_data[c_index]);
+
+			c_index++;
+
+			if(c_index >= file_size/2)
+			{
+				c_index = 0;
+			}
+			else
+			{
+				c_index++;
+			}
+		}
+		else if(keys[i] == D1 && d_index < file_size/2)
+		{
+			audio_buffer[audio_buffer_count] += (d_data[d_index]);
+
+			d_index++;
+
+			if(d_index >= file_size/2)
+			{
+				d_index = 0;
+			}
+			else
+			{
+				d_index++;
+			}
+		}
+
+		else if(keys[i] == E1 && e_index < file_size/2)
+		{
+			audio_buffer[audio_buffer_count] += (e_data[e_index]);
+
+			e_index++;
+
+			if(e_index >= file_size/2)
+			{
+				e_index = 0;
+			}
+			else
+			{
+				e_index++;
+			}
+		}
+
+		else if(keys[i] == F1 && f_index < file_size/2)
+		{
+			audio_buffer[audio_buffer_count] += (f_data[f_index]);
+
+			f_index++;
+
+			if(f_index >= file_size/2)
+			{
+				f_index = 0;
+			}
+			else
+			{
+				f_index++;
+			}
+		}
+
+		else if(keys[i] == G1 && g_index < file_size/2)
+		{
+			audio_buffer[audio_buffer_count] += (g_data[g_index]);
+
+			g_index++;
+
+			if(g_index >= file_size/2)
+			{
+				g_index = 0;
+			}
+			else
+			{
+				g_index++;
+			}
+		}
+
+		else if(keys[i] == A1 && a_index < file_size/2)
+		{
+			audio_buffer[audio_buffer_count] += (a_data[a_index]);
+
+			a_index++;
+
+			if(a_index >= file_size/2)
+			{
+				a_index = 0;
+			}
+			else
+			{
+				a_index++;
+			}
+		}
+
+		else if(keys[i] == B1 && b_index < file_size/2)
+		{
+			audio_buffer[audio_buffer_count] += (b_data[b_index]);
+
+			b_index++;
+
+			if(b_index >= file_size/2)
+			{
+				b_index = 0;
+			}
+			else
+			{
+				b_index++;
+			}
+		}
+	}
+
+}
+
 short convert_to_16 (char a, char b) {
 	short c = (unsigned char) a << 8 | (unsigned char) b;
 
@@ -261,11 +403,11 @@ void open_file(filename) {
 
 	if (opened_file == -1)
 		printf("%s could not be opened\n", filename);
-
+	/*
 	else if (opened_file == -2)
 		printf("File is already opened\n");
 	else
-		printf("File is opened.\n");
+		printf("File is opened.\n");*/
 }
 
 void reverse_array(int array[], int count) {
@@ -310,7 +452,7 @@ void audio_data_load() {
 	int i,j;
 	unsigned int audio_data_byte[2];
 
-	if(filename == "C5.wav")
+	if(filename == "c.wav")
 	{
 		//Allocates memory space for buffer
 		c_data = (unsigned int *) malloc ((file_size/2) * sizeof(unsigned int));
@@ -330,7 +472,7 @@ void audio_data_load() {
 		printf("Finish loading c data\n");
 	}
 
-	else if(filename == "D5.wav")
+	else if(filename == "d.wav")
 	{
 		d_data = (unsigned int *) malloc ((file_size/2) * sizeof(unsigned int));
 
@@ -473,7 +615,7 @@ void stop_audio_interrupt() {
 void load_music(char *selectedFile) {
 	filename = selectedFile;
 	open_file(filename);
-	if(filename == "C5.wav")
+	if(filename == "c.wav")
 		audio_file_info();
 	audio_data_load();
 }
@@ -481,8 +623,8 @@ void load_music(char *selectedFile) {
 
 void load_audio(void) {
 	read_sd();
-	load_music("C5.wav");
-	load_music("D5.wav");
+	load_music("c.wav");
+	load_music("d.wav");
 	load_music("e.wav");
 	load_music("f.wav");
 	load_music("g.wav");
@@ -492,8 +634,9 @@ void load_audio(void) {
 	start_audio_interrupt();
 }
 
-void play_sound(int ascii){
-	key = ascii;
+void play_sound(int ascii[], int size){
+	keys = ascii;
+	keySize = size;
 	//printf("sound found: %i\n", ascii);
 }
 
