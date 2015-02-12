@@ -64,7 +64,7 @@ void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 	int check = decode_scancode(ps2, &code_type, &buf, &ascii);
 	frequency = alt_timestamp_freq();
 	alt_up_char_buffer_string(char_buffer, "Press Esc to Return to Menu!", 50, 1);
-	alt_up_char_buffer_string(char_buffer, "Press F1 to Record, F2 to Playback!", 55, 2);
+	alt_up_char_buffer_string(char_buffer, "Press F1 to Record, F2 to Stop recording, F3 to Playback!", 22, 2);
 	nameWhiteKeys(char_buffer);
 
 	//Keyboard loop
@@ -210,7 +210,6 @@ void removeFromPlayArray(int buf) {
 	while (i < maxNotes) {
 		if (playList[i] == ascii) {
 			playList[i] = 0;
-			printf("Successfully removed %d from array\n", ascii);
 			return;
 		}
 		i++;

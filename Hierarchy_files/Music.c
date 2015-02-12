@@ -147,11 +147,11 @@ void audio_isr(void* context, alt_u32 id) {
 
 			if(keys[0] == C1 && c_index < file_size/2)
 			{
+
 				audio_buffer[audio_buffer_count] += (c_data[c_index])/2;
 
 				c_index++;
-
-				if(c_index >= file_size/2)
+				if(c_index >= (file_size/2))
 				{
 					c_index = 0;
 				}
@@ -159,6 +159,7 @@ void audio_isr(void* context, alt_u32 id) {
 				{
 					c_index++;
 				}
+
 			}
 			if(keys[1] == D1 && d_index < file_size/2)
 			{
@@ -516,11 +517,11 @@ void load_audio(void) {
 void play_sound(int ascii[], int size){
 	keys = ascii;
 	keySize = size;
-//	int i;
-//	for(i = 0; i < size; i++)
-//	{
-//		printf("%d\n", keys[i]);
-//	}
+	//	int i;
+	//	for(i = 0; i < size; i++)
+	//	{
+	//		printf("%d\n", keys[i]);
+	//	}
 	//printf("sound found: %i\n", ascii);
 }
 
