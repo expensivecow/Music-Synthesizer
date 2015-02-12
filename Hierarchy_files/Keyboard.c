@@ -13,22 +13,41 @@
 #define BLUE 0x000F
 #define RED 0xF000
 #define GREEN 0x0FF0
-#define C1 28 // Lower C
-#define Cs 29 // C#
-#define D1 27 // D
-#define Ds 36 // D#
-#define E1 35 // E
-#define F1 43 // F
-#define Fs 44 // F#
-#define G1 52 // G
-#define Gs 53 // G#
-#define A1 51 // A
-#define As 60 // A#
-#define B1 59 // B
-#define C2 66 // Higher C
+#define C1buf 28 // Lower C
+#define Csbuf 29 // C#
+#define D1buf 27 // D
+#define Dsbuf 36 // D#
+#define E1buf 35 // E
+#define F1buf 43 // F
+#define Fsbuf 44 // F#
+#define G1buf 52 // G
+#define Gsbuf 53 // G#
+#define A1buf 51 // A
+#define Asbuf 60 // A#
+#define B1buf 59 // B
+#define C2buf 66 // Higher C
+
+
+#define C1 65 // Lower C
+#define Cs 87 // C#
+#define D1 83 // D
+#define Ds 69 // D#
+#define E1 68 // E
+#define F1 70 // F
+#define Fs 84 // F#
+#define G1 71 // G
+#define Gs 89 // G#
+#define A1 72 // A
+#define As 85 // A#
+#define B1 74 // B
+#define C2 75 // Higher C
+
 #define maxNotes 13
 
 int playList[13] = { 0 };
+int recordStatus = 0;
+int recordIndex = 0;
+int keyChanged = 0;
 
 void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 		unsigned char buf, char ascii,
@@ -51,27 +70,85 @@ void start_keyboard(alt_up_ps2_dev * ps2, KB_CODE_TYPE code_type,
 		}
 
 		check = decode_scancode(ps2, &code_type, &buf, &ascii);
+
+		if(code_type == 2 && buf == 4) {
+			printf("Start playing\n");
+			openSD();
+			int playback[100][13];
+			readTxtFile("STUPID.TXT",100,13,playback);
+		}
+
+		if (recordStatus==0 && code_type == 2 && buf == 5){
+			recordStatus = 1;
+			printf("Start Recording\n");
+		}
+		else if (recordStatus==1 && code_type == 2 && buf == 6){
+			recordFinish(recordIndex);
+			recordStatus = 0;
+			recordIndex = 0;
+			printf("End Recording\n");
+		}
 		if (isValidKey(buf)) {
 			if (code_type == 1) {
 				reDrawKey(pixel_buffer, buf, colour);
-				addToPlayArray(buf);
+				printf("Before add %c, %d\n", ascii, ascii);
+				addToPlayArray(ascii);
+				keyChanged = 1;
 			} else if (code_type == 4 && isSharp(buf)) {
 				reDrawKey(pixel_buffer, buf, BLACK);
 				removeFromPlayArray(buf);
+				keyChanged = 1;
 			} else if (code_type == 4 && !isSharp(buf)) {
 				reDrawKey(pixel_buffer, buf, WHITE);
 				removeFromPlayArray(buf);
+				keyChanged = 1;
 			}
+			if(recordStatus == 1 && keyChanged == 1){
+				printf("Record new note. \n");
+				recordNote(playList,recordIndex);
+				recordIndex++;
+				keyChanged = 0;
+			}
+			play_sound(playList,13);
 		}
+	}
+}
+int returnPlayList(int size){
+	return playList;
+}
+
+int convert(int buf)
+{
+	if(buf==C1buf){
+		return C1;
+	}
+	else if(buf==D1buf){
+		return D1;
+	}
+	else if(buf==E1buf){
+		return E1;
+	}
+	else if(buf==F1buf){
+		return F1;
+	}
+	else if(buf==G1buf){
+		return G1;
+	}
+	else if(buf==A1buf){
+		return A1;
+	}
+	else if(buf==B1buf){
+		return B1;
 	}
 }
 
 void removeFromPlayArray(int buf) {
+	int ascii = convert(buf);
 	int i = 0;
 	while (i < maxNotes) {
-		if (playList[i] == buf) {
+		if (playList[i] == ascii) {
 			playList[i] = 0;
-			printf("Successfully removed %d from array\n", buf);
+			printf("Successfully removed %d from array\n", ascii);
 			return;
 		}
 		i++;
@@ -79,34 +156,42 @@ void removeFromPlayArray(int buf) {
 }
 
 void addToPlayArray(int buf) {
-	if (isValidKey(buf)) {
-		int i = 0;
-		//iterate to check if the note is already being played
-		while (i < maxNotes) {
-			if (playList[i] == buf) {
-				return;
-			}
-			i++;
-		}
-		i = 0;
-		//look for empty spot in array
-		while (i < maxNotes) {
-			if (playList[i] == 0) {
-				playList[i] = buf;
-				printf("adding %d to play list\n", buf);
-				return;
-			}
-			i++;
-		}
+	if(buf==C1){
+		playList[0]=buf;
+		return;
+	}
+	else if(buf==D1){
+		playList[1]=buf;
+		return;
+	}
+	else if(buf==E1){
+		playList[2]=buf;
+		return;
+	}
+	else if(buf==F1){
+		playList[3]=buf;
+		return;
+	}
+	else if(buf==G1){
+		playList[4]=buf;
+		return;
+	}
+	else if(buf==A1){
+		playList[5]=buf;
+		return;
+	}
+	else if(buf==B1){
+		playList[6]=buf;
+		return;
 	}
 }
 
 int isSharp(int buf) {
-	return (buf == Cs || buf == Ds || buf == Fs || buf == Gs || buf == As);
+	return (buf == Csbuf || buf == Dsbuf || buf == Fsbuf || buf == Gsbuf || buf == Asbuf);
 }
 
 int isValidKey(int buf) {
-	int * validascii[] = { C1, Cs, D1, Ds, E1, F1, Fs, G1, Gs, A1, As, B1, C2 };
+	int * validascii[] = { C1buf, Csbuf, D1buf, Dsbuf, E1buf, F1buf, Fsbuf, G1buf, Gsbuf, A1buf, Asbuf, B1buf, C2buf };
 	int i = 0;
 	while (i < 13) {
 		if (buf == validascii[i]) {
@@ -118,82 +203,82 @@ int isValidKey(int buf) {
 }
 
 void reDrawKey(alt_up_pixel_buffer_dma_dev* pixel_buffer, int buf, int colour) {
-	//ascii == C1
-	if (buf == C1) {
+	//ascii == C1buf
+	if (buf == C1buf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 0, 20, 30, 228, colour,
 				0);
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 0, 133, 39, 228, colour,
 				0);
 	}
-	//ascii == Cs
-	else if (buf == Cs) {
+	//ascii == Csbuf
+	else if (buf == Csbuf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 30, 20, 50, 132, colour,
 				0);
 	}
-	//ascii == D1
-	else if (buf == D1) {
+	//ascii == D1buf
+	else if (buf == D1buf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 51, 20, 69, 132, colour,
 				0);
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 41, 133, 79, 228, colour,
 				0);
 	}
-	//ascii == Ds
-	else if (buf == Ds) {
+	//ascii == Dsbuf
+	else if (buf == Dsbuf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 70, 20, 90, 132, colour,
 				0);
 	}
-	//ascii == E1
-	else if (buf == E1) {
+	//ascii == E1buf
+	else if (buf == E1buf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 91, 20, 119, 132, colour,
 				0);
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 81, 133, 119, 228,
 				colour, 0);
 	}
-	//ascii == F1
-	else if (buf == F1) {
+	//ascii == F1buf
+	else if (buf == F1buf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 121, 20, 149, 132,
 				colour, 0);
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 121, 133, 159, 228,
 				colour, 0);
 	}
-	//ascii == Fs
-	else if (buf == Fs) {
+	//ascii == Fsbuf
+	else if (buf == Fsbuf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 150, 20, 170, 132,
 				colour, 0);
 	}
-	//ascii == G1
-	else if (buf == G1) {
+	//ascii == G1buf
+	else if (buf == G1buf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 171, 20, 189, 132,
 				colour, 0);
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 161, 133, 199, 228,
 				colour, 0);
 	}
 	//ascii == Gs
-	else if (buf == Gs) {
+	else if (buf == Gsbuf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 190, 20, 210, 132,
 				colour, 0);
 	}
-	//ascii == A1
-	else if (buf == A1) {
+	//ascii == A1buf
+	else if (buf == A1buf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 211, 20, 229, 132,
 				colour, 0);
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 201, 133, 239, 228,
 				colour, 0);
 	}
-	//ascii == As
-	else if (buf == As) {
+	//ascii == Asbuf
+	else if (buf == Asbuf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 230, 20, 250, 132,
 				colour, 0);
 	}
-	//ascii == B1
-	else if (buf == B1) {
+	//ascii == B1buf
+	else if (buf == B1buf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 251, 20, 279, 132,
 				colour, 0);
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 241, 133, 279, 228,
 				colour, 0);
 	}
-	//ascii == C2
-	else if (buf == C2) {
+	//ascii == C2buf
+	else if (buf == C2buf) {
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 281, 20, 319, 132,
 				colour, 0);
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 281, 133, 319, 228,

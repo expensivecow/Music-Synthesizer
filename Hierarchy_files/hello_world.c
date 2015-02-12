@@ -29,6 +29,8 @@
 #define maxNotes 13
 
 int main() {
+
+	load_audio();
 	/********************************/
 	/* KEYBOARD CONFIGURATIONS*******/
 	/********************************/
@@ -68,6 +70,7 @@ int main() {
 	alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 0); //current
 	alt_up_pixel_buffer_dma_clear_screen(pixel_buffer, 1); //back buffer
 
+
 	while (1) {
 		//start_keyboard(ps2, code_type, buf, ascii, pixel_buffer);
 		printf("Went through the start screen\n");
@@ -75,6 +78,8 @@ int main() {
 
 		if(select == 1) {
 			start_keyboard(ps2, code_type, buf, ascii, pixel_buffer);
+		} else if(select == 2) {
+			start_tutorial(pixel_buffer, char_buffer, ps2, code_type, buf, ascii);
 		}
 
 		alt_up_pixel_buffer_dma_swap_buffers(pixel_buffer);
